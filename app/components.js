@@ -51,7 +51,6 @@ export function AwardRow({ award, showAgent = false, target }) {
         <div className="meta">
           {showAgent && <strong className="meta-agent">{award.agent_name}</strong>}
           <span>{formatDate(award.award_date)}</span>
-          {!showAgent && award.agent_country && <span className="tag">{award.agent_country}</span>}
           {!showAgent && award.issuer_name && (
             <span>
               Issued by <strong>{award.issuer_name}</strong>
