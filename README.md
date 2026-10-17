@@ -50,3 +50,24 @@ The key is only used on the server; it never appears in the page source.
     npm install
     KUDOS_FIXTURE=test/fixture.json npm run build
     KUDOS_FIXTURE=test/fixture.json npm start
+
+## Embedding in agentbee.net (WordPress)
+
+`/embed` is the directory on its own (no header, hero or footer), for use inside an
+iframe. Links open the full Kudos pages in a new tab. It's excluded from search engines,
+so Google indexes kudos.agentbee.net itself rather than the embed.
+
+Paste this into a Custom HTML block on the WordPress page. It replaces the old
+awards-opal iframe, and the script makes the iframe grow and shrink as rows are opened:
+
+    <iframe id="kudos-embed" src="https://kudos.agentbee.net/embed"
+      style="width:100%;border:0;min-height:600px" loading="lazy"
+      title="Kudos – Education Agent Awards & Recognition"></iframe>
+    <script>
+      window.addEventListener('message', function (e) {
+        if (e.origin !== 'https://kudos.agentbee.net') return;
+        if (e.data && e.data.type === 'kudos-embed-height') {
+          document.getElementById('kudos-embed').style.height = e.data.height + 'px';
+        }
+      });
+    </script>

@@ -10,41 +10,22 @@ export const metadata = {
   description:
     'A free, searchable record of awards and recognition given to international student recruitment agents by universities and colleges.',
   openGraph: { siteName: 'Kudos by AgentBee', type: 'website' },
-  twitter: { card: 'summary_large_image' }
+  twitter: { card: 'summary_large_image' },
+  icons: { icon: 'https://agentbee.net/wp-content/uploads/2025/08/cropped-AgentBee-Logo-2025-512-270x270.png' }
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body>
-        <header className="site-header">
-          <div className="wrap header-inner">
-            <a href="/" className="brand">
-              <span className="brand-mark" aria-hidden="true">🏆</span>
-              <span>
-                <strong>Kudos</strong> <span className="muted">by AgentBee</span>
-              </span>
-            </a>
-            <nav className="nav">
-              <a href="/">Agents</a>
-              <a href="/?view=institution">Institutions</a>
-            </nav>
-          </div>
-        </header>
-        <main className="wrap">{children}</main>
-        <footer className="site-footer">
-          <div className="wrap">
-            <p>
-              Kudos lists awards as publicly announced by the issuing organisation. A listing is not an
-              endorsement or assessment of the agent by AgentBee.
-            </p>
-            <p>
-              © {new Date().getFullYear()} <a href="https://agentbee.net">AgentBee</a> ·{' '}
-              <a href="https://agentbee.net/privacy/">Privacy</a>
-            </p>
-          </div>
-        </footer>
-      </body>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+3:wght@400;600;700&display=swap"
+        />
+      </head>
+      <body>{children}</body>
     </html>
   );
 }

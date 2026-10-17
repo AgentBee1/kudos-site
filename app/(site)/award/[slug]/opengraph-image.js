@@ -1,5 +1,5 @@
-import { getAward, formatDate } from '../../../lib/data';
-import { kudosCard, ogSize } from '../../../lib/og';
+import { getAward, formatDate } from '../../../../lib/data';
+import { kudosCard, ogSize } from '../../../../lib/og';
 
 export const size = ogSize;
 export const contentType = 'image/png';

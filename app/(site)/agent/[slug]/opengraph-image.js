@@ -1,5 +1,5 @@
-import { getAgent } from '../../../lib/data';
-import { kudosCard, ogSize } from '../../../lib/og';
+import { getAgent } from '../../../../lib/data';
+import { kudosCard, ogSize } from '../../../../lib/og';
 
 export const size = ogSize;
 export const contentType = 'image/png';
