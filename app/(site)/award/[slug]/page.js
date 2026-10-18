@@ -60,7 +60,11 @@ export default async function AwardPage({ params }) {
   if (!found) notFound();
   const { award, agent } = found;
   const site = agent.isClient ? websiteHref(agent.website) : null;
-  const embed = await getPostEmbed(award.source_url);
+  // The embed is a nice-to-have: any problem building it falls back to the plain link.
+  const embed = await getPostEmbed(award.source_url).catch((e) => {
+    console.error('Kudos embed failed for', award.source_url, e);
+    return null;
+  });
 
   let more = [];
   if (!agent.isClient) {
