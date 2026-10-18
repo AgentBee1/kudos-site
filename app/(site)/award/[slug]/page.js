@@ -9,6 +9,7 @@ import {
   DISCLAIMER
 } from '../../../../lib/data';
 import { AwardRow } from '../../../components';
+import { getPostEmbed } from '../../../../lib/embed';
 
 export const revalidate = 600;
 
@@ -58,6 +59,7 @@ export default async function AwardPage({ params }) {
   if (!found) notFound();
   const { award, agent } = found;
   const site = agent.isClient ? websiteHref(agent.website) : null;
+  const embed = await getPostEmbed(award.source_url);
 
   let more = [];
   if (!agent.isClient) {
@@ -102,6 +104,27 @@ export default async function AwardPage({ params }) {
             </dd>
           </dl>
         </div>
+
+        {embed && (
+          <section className="post-embed">
+            <h2 className="section-title">The announcement on {embed.platform}</h2>
+            <div className="embed-frame">
+              <iframe
+                src={embed.src}
+                title={`${award.award_title} – announcement on ${embed.platform}`}
+                height={embed.height}
+                loading="lazy"
+                allowFullScreen
+              />
+            </div>
+            <p className="muted small">
+              Not showing?{' '}
+              <a href={award.source_url} rel="noopener nofollow" target="_blank">
+                Open it on {embed.platform} ↗
+              </a>
+            </p>
+          </section>
+        )}
 
         <div className="actions">
           {agent.total > 1 && (
