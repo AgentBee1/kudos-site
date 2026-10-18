@@ -5,7 +5,8 @@ import { AwardRow, Logo } from '../../../components';
 export const revalidate = 600;
 
 export async function generateStaticParams() {
-  const awards = await getAwards();
+  // If the data can't be reached at build time, pages are simply built on first visit.
+  const awards = await getAwards().catch(() => []);
   return groupByAgent(awards).map((g) => ({ slug: g.slug }));
 }
 

@@ -3,7 +3,7 @@ import { getAwards, groupByAgent, SITE_URL } from '../lib/data';
 export const revalidate = 3600;
 
 export default async function sitemap() {
-  const awards = await getAwards();
+  const awards = await getAwards().catch(() => []);
   const agents = groupByAgent(awards);
   const visible = new Set(agents.flatMap((g) => g.visible.map((a) => a.award_id)));
   return [

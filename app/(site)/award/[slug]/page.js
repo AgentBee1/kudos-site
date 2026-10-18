@@ -14,7 +14,8 @@ import { getPostEmbed } from '../../../../lib/embed';
 export const revalidate = 600;
 
 export async function generateStaticParams() {
-  const awards = await getAwards();
+  // If the data can't be reached at build time, pages are simply built on first visit.
+  const awards = await getAwards().catch(() => []);
   return awards.map((a) => ({ slug: a.award_slug }));
 }
 
