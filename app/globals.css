@@ -90,7 +90,6 @@ img { max-width: 100%; }
 .award-body { flex: 1; min-width: 0; }
 .award-title { margin: 0 0 2px; font-weight: 500; font-size: 1.02rem; line-height: 1.35; }
 .award-title a { color: #2b3240; }
-.award-title a { color: var(--ink); }
 .meta { display: flex; flex-wrap: wrap; gap: 2px 8px; align-items: center; font-size: 0.875rem; color: var(--muted); }
 .meta > * + *::before { content: '·'; margin-right: 8px; color: #b8bec9; }
 .meta strong { font-weight: 400; color: #4b5563; }
