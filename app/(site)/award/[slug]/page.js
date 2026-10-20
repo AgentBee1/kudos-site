@@ -9,11 +9,13 @@ import {
   DISCLAIMER
 } from '../../../../lib/data';
 import { AwardRow } from '../../../components';
+import { getPostEmbed } from '../../../../lib/embed';
 
 export const revalidate = 600;
 
 export async function generateStaticParams() {
-  const awards = await getAwards();
+  // If the data can't be reached at build time, pages are simply built on first visit.
+  const awards = await getAwards().catch(() => []);
   return awards.map((a) => ({ slug: a.award_slug }));
 }
 
@@ -58,6 +60,11 @@ export default async function AwardPage({ params }) {
   if (!found) notFound();
   const { award, agent } = found;
   const site = agent.isClient ? websiteHref(agent.website) : null;
+  // The embed is a nice-to-have: any problem building it falls back to the plain link.
+  const embed = await getPostEmbed(award.source_url).catch((e) => {
+    console.error('Kudos embed failed for', award.source_url, e);
+    return null;
+  });
 
   let more = [];
   if (!agent.isClient) {
@@ -102,6 +109,27 @@ export default async function AwardPage({ params }) {
             </dd>
           </dl>
         </div>
+
+        {embed && (
+          <section className="post-embed">
+            <h2 className="section-title">The announcement on {embed.platform}</h2>
+            <div className="embed-frame">
+              <iframe
+                src={embed.src}
+                title={`${award.award_title} – announcement on ${embed.platform}`}
+                height={embed.height}
+                loading="lazy"
+                allowFullScreen
+              />
+            </div>
+            <p className="muted small">
+              Not showing?{' '}
+              <a href={award.source_url} rel="noopener nofollow" target="_blank">
+                Open it on {embed.platform} ↗
+              </a>
+            </p>
+          </section>
+        )}
 
         <div className="actions">
           {agent.total > 1 && (
