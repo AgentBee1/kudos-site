@@ -65,16 +65,20 @@ export default async function AgentPage({ params }) {
           ))}
           {hidden > 0 && (
             <div className="row-foot">
-              <span className="lock">
+              <span className="lock agent-cta">
                 🔒 Showing {agent.visible.length} of {agent.total} awards. {PAID_TIER_NAME} agents display their full
                 award history.
+              </span>
+              <span className="client-note">
+                Showing the {agent.visible.length} most recent of {agent.total} awards. The full list is in your AgentBee
+                portal.
               </span>
             </div>
           )}
         </div>
 
         {!agent.isClient && (
-          <div className="callout">
+          <div className="callout agent-cta">
             <p>
               <strong>Is this your agency?</strong> Claim your Kudos profile
               {hidden > 0 ? ` and upgrade to ${PAID_TIER_NAME} to display all ${agent.total} awards` : ''}.

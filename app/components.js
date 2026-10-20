@@ -86,7 +86,7 @@ export function AgentRow({ agent, target, open = false }) {
         ))}
         <div className="row-foot">
           {hidden > 0 ? (
-            <span className="lock">
+            <span className="lock agent-cta">
               🔒 Showing {agent.visible.length} of {agent.total} awards. {PAID_TIER_NAME} agents display their full
               award history.{' '}
               <a href={CLAIM_URL} target="_blank" rel="noopener">

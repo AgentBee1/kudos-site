@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import {
   getAward,
   getAwards,
@@ -58,6 +58,7 @@ export default async function AwardPage({ params }) {
   const { slug } = await params;
   const found = await getAward(slug);
   if (!found) notFound();
+  if (found.redirectTo) permanentRedirect(`/award/${found.redirectTo}`);
   const { award, agent } = found;
   const site = agent.isClient ? websiteHref(agent.website) : null;
   // The embed is a nice-to-have: any problem building it falls back to the plain link.
@@ -145,7 +146,7 @@ export default async function AwardPage({ params }) {
         </div>
 
         {!agent.isClient && (
-          <div className="callout">
+          <div className="callout agent-cta">
             <p>
               <strong>Is this your agency?</strong> Claim your Kudos profile
               {agent.total > agent.visible.length

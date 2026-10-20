@@ -1,4 +1,5 @@
 import { DISCLAIMER } from '../../lib/data';
+import ClientView from '../client-view';
 
 const AGENTBEE_LOGO = 'https://agentbee.net/wp-content/uploads/2020/06/Copy-of-Small-Logo-Transparent.png';
 const FOOTER_LOGO = 'https://agentbee.net/wp-content/uploads/2025/01/AgentBee-Logo-2025-footer-1.png';
@@ -21,6 +22,7 @@ export default function SiteLayout({ children }) {
         </div>
       </header>
 
+      <ClientView />
       {children}
 
       <footer className="site-footer">
