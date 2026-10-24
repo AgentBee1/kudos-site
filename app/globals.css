@@ -121,6 +121,10 @@ img { max-width: 100%; }
 .callout { background: var(--cream); border: 1px solid var(--line-warm); border-radius: 14px; padding: 18px 22px; margin: 24px 0; display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
 .callout p { margin: 0; }
 .section-title { font-size: 1.1rem; margin: 28px 0 12px; }
+.section-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin: 28px 0 12px; }
+.section-head .section-title { margin: 0; }
+.section-link { font-weight: 600; font-size: 0.92rem; white-space: nowrap; }
+.btn-block { display: block; text-align: center; margin: 14px 0 0; padding: 12px 14px; font-size: 1rem; white-space: normal; }
 .disclaimer { color: var(--muted); font-size: 0.88rem; margin-top: 28px; }
 
 .post-embed { margin: 24px 0 8px; }

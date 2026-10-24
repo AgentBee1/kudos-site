@@ -2,6 +2,7 @@ import { notFound, permanentRedirect } from 'next/navigation';
 import {
   getAward,
   getAwards,
+  groupByAgent,
   CLAIM_URL,
   PAID_TIER_NAME,
   formatDate,
@@ -68,9 +69,12 @@ export default async function AwardPage({ params }) {
   });
 
   let more = [];
+  let directoryCount = 0;
   if (!agent.isClient) {
     const all = await getAwards();
     more = all.filter((a) => a.agent_slug !== agent.slug).slice(0, 3);
+    // Count what the directory actually shows (free-tier caps applied), so the number matches.
+    directoryCount = groupByAgent(all).reduce((n, g) => n + g.visible.length, 0);
   }
 
   return (
@@ -162,12 +166,20 @@ export default async function AwardPage({ params }) {
 
         {more.length > 0 && (
           <>
-            <h2 className="section-title">Recently added to Kudos</h2>
+            <div className="section-head">
+              <h2 className="section-title">Recently added to Kudos</h2>
+              <a className="section-link" href="/">
+                Browse all awards →
+              </a>
+            </div>
             <div className="panel">
               {more.map((a) => (
                 <AwardRow key={a.award_id} award={a} showAgent />
               ))}
             </div>
+            <a className="btn btn-blue btn-block" href="/">
+              {directoryCount > 3 ? `Explore all ${directoryCount} awards on Kudos` : 'Explore all awards on Kudos'} →
+            </a>
           </>
         )}
 
