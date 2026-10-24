@@ -71,3 +71,12 @@ awards-opal iframe, and the script makes the iframe grow and shrink as rows are 
         }
       });
     </script>
+
+## Agent awards widget (agents' own websites)
+
+`/widget` lets an agent search for their agency, preview their awards and copy an
+embed snippet. The snippet loads `/embed/agent/<slug>`: that agent's awards only, with
+the same free-tier cap as their profile and a "Verified by AgentBee Kudos" footer that
+links back to their profile. It isn't indexed, so search engines credit Kudos, not the
+embed. The snippet's script resizes the iframe and only listens to messages from its own
+iframe, so several embeds can sit on one page. Each agent profile links to its widget.

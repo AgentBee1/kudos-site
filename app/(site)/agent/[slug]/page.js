@@ -89,6 +89,10 @@ export default async function AgentPage({ params }) {
           </div>
         )}
 
+        <p className="agent-embed-link agent-cta">
+          <a href={`/widget?agent=${agent.slug}`}>Show these awards on your own website →</a>
+        </p>
+
         <p className="disclaimer">{DISCLAIMER}</p>
       </main>
     </>

@@ -8,6 +8,7 @@ export default async function sitemap() {
   const visible = new Set(agents.flatMap((g) => g.visible.map((a) => a.award_id)));
   return [
     { url: `${SITE_URL}/`, changeFrequency: 'daily', priority: 1 },
+    { url: `${SITE_URL}/widget`, changeFrequency: 'monthly', priority: 0.5 },
     ...agents.map((g) => ({ url: `${SITE_URL}/agent/${g.slug}`, lastModified: g.latest || undefined, priority: 0.8 })),
     ...awards
       .filter((a) => visible.has(a.award_id))
