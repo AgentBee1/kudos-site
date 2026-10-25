@@ -2,7 +2,6 @@ import { notFound, permanentRedirect } from 'next/navigation';
 import {
   getAward,
   getAwards,
-  groupByAgent,
   CLAIM_URL,
   PAID_TIER_NAME,
   formatDate,
@@ -73,8 +72,8 @@ export default async function AwardPage({ params }) {
   if (!agent.isClient) {
     const all = await getAwards();
     more = all.filter((a) => a.agent_slug !== agent.slug).slice(0, 3);
-    // Count what the directory actually shows (free-tier caps applied), so the number matches.
-    directoryCount = groupByAgent(all).reduce((n, g) => n + g.visible.length, 0);
+    // Same total as the directory header ("N awards · …").
+    directoryCount = all.length;
   }
 
   return (
