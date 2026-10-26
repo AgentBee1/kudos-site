@@ -1,4 +1,4 @@
-import { getAward, formatDate } from '../../../../lib/data';
+import { getAward, formatDate, issuerLabel } from '../../../../lib/data';
 import { kudosCard, ogSize } from '../../../../lib/og';
 
 export const size = ogSize;
@@ -17,7 +17,7 @@ export default async function Image({ params }) {
     eyebrow: 'Award & Recognition',
     title: award.award_title,
     line1: award.agent_name,
-    line2: [award.issuer_name && `Awarded by ${award.issuer_name}`, formatDate(award.award_date)]
+    line2: [award.issuer_name && `Awarded by ${issuerLabel(award)}`, formatDate(award.award_date)]
       .filter(Boolean)
       .join(' · ')
   });

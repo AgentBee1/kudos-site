@@ -1,14 +1,6 @@
 import { notFound, permanentRedirect } from 'next/navigation';
-import {
-  getAward,
-  getAwards,
-  CLAIM_URL,
-  PAID_TIER_NAME,
-  formatDate,
-  websiteHref,
-  DISCLAIMER
-} from '../../../../lib/data';
-import { AwardRow } from '../../../components';
+import { getAward, getAwards, CLAIM_URL, PAID_TIER_NAME, formatDate, websiteHref, DISCLAIMER, issuerLabel, isAggregatorAward } from '../../../../lib/data';
+import { AwardRow, AggregatorBadge } from '../../../components';
 import { getPostEmbed } from '../../../../lib/embed';
 
 export const revalidate = 600;
@@ -40,9 +32,13 @@ export async function generateMetadata({ params }) {
   const found = await getAward(slug);
   if (!found) return {};
   const { award, agent } = found;
-  const title = `${award.agent_name} – ${award.award_title}${award.issuer_name ? ` (${award.issuer_name})` : ''}`;
+  const title = `${award.agent_name} – ${award.award_title}${award.issuer_name ? ` (${award.issuer_name}${isAggregatorAward(award) ? ', agent aggregator' : ''})` : ''}`;
   const description = `${award.agent_name} received "${award.award_title}" from ${
-    award.issuer_name || 'an education provider'
+    award.issuer_name
+      ? isAggregatorAward(award)
+        ? `${award.issuer_name}, an agent aggregator`
+        : award.issuer_name
+      : 'an education provider'
   }${award.award_date ? `, ${formatDate(award.award_date)}` : ''}. See all awards for ${award.agent_name} on Kudos.`;
   return {
     title,
@@ -84,7 +80,7 @@ export default async function AwardPage({ params }) {
           <h1>{award.award_title}</h1>
           <p className="sub">
             Awarded to <a href={`/agent/${agent.slug}`}>{award.agent_name}</a>
-            {award.issuer_name ? ` by ${award.issuer_name}` : ''}
+            {award.issuer_name ? ` by ${issuerLabel(award)}` : ''}
           </p>
         </div>
       </section>
@@ -98,7 +94,10 @@ export default async function AwardPage({ params }) {
               {award.agent_country ? <span className="muted"> · {award.agent_country}</span> : null}
             </dd>
             <dt>Awarded by</dt>
-            <dd>{award.issuer_name || '—'}</dd>
+            <dd>
+              {award.issuer_name || '—'}
+              {isAggregatorAward(award) && <> <AggregatorBadge /></>}
+            </dd>
             <dt>Date</dt>
             <dd>{formatDate(award.award_date) || '—'}</dd>
             <dt>Source</dt>

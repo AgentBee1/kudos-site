@@ -1,4 +1,4 @@
-import { CLAIM_URL, PAID_TIER_NAME, formatDate, groupByAgent, groupByIssuer } from '../lib/data';
+import { CLAIM_URL, PAID_TIER_NAME, formatDate, groupByAgent, groupByIssuer, isAggregatorAward } from '../lib/data';
 import SearchBox from './search-box';
 
 export const KUDOS_LOGO = 'https://agentbee.net/wp-content/uploads/2023/09/kudos.png';
@@ -24,6 +24,14 @@ export function Logo({ src, name, size = 40 }) {
   return (
     <span className="logo" style={{ width: size, height: size }} aria-hidden="true">
       🏆
+    </span>
+  );
+}
+
+export function AggregatorBadge() {
+  return (
+    <span className="agg-badge" title="An agent aggregator: a recruitment company that awards its own sub-agents">
+      Agent aggregator
     </span>
   );
 }
@@ -54,6 +62,7 @@ export function AwardRow({ award, showAgent = false, target }) {
           {!showAgent && award.issuer_name && (
             <span>
               Issued by <strong>{award.issuer_name}</strong>
+              {isAggregatorAward(award) && <> <AggregatorBadge /></>}
             </span>
           )}
         </div>
@@ -110,10 +119,12 @@ function IssuerRow({ issuer, target }) {
     <details className="row" data-search={issuer.name.toLowerCase()}>
       <summary>
         <span className="logo" aria-hidden="true">
-          🏛️
+          {issuer.isAggregator ? '🤝' : '🏛️'}
         </span>
         <span className="row-name">
-          {issuer.name}
+          <span>
+            {issuer.name} {issuer.isAggregator && <AggregatorBadge />}
+          </span>
           {issuer.country && <span className="row-sub">{issuer.country}</span>}
         </span>
         <Count n={issuer.awards.length} />
@@ -137,6 +148,9 @@ export function Directory({ awards, view, basePath = '/', target }) {
   const visibleIds = new Set(agents.flatMap((g) => g.visible.map((a) => a.award_id)));
   const issuers = groupByIssuer(awards.filter((a) => visibleIds.has(a.award_id))).sort(byName);
   const isAgent = view !== 'institution';
+  const allIssuers = groupByIssuer(awards);
+  const aggCount = allIssuers.filter((i) => i.isAggregator).length;
+  const instCount = allIssuers.length - aggCount;
 
   return (
     <section className="directory">
@@ -144,7 +158,8 @@ export function Directory({ awards, view, basePath = '/', target }) {
         <div>
           <h2 className="dir-title">Agent Awards &amp; Recognition</h2>
           <p className="dir-sub">
-            {awards.length} awards · {agents.length} agents · {groupByIssuer(awards).length} institutions
+            {awards.length} awards · {agents.length} agents · {instCount} institutions
+            {aggCount ? ` · ${aggCount} aggregator${aggCount === 1 ? '' : 's'}` : ''}
           </p>
         </div>
         <div className="tabs" role="tablist">
@@ -157,12 +172,12 @@ export function Directory({ awards, view, basePath = '/', target }) {
             role="tab"
             aria-selected={!isAgent}
           >
-            By institution
+            By issuer
           </a>
         </div>
       </div>
 
-      <SearchBox placeholder={isAgent ? 'Search agents or countries…' : 'Search institutions…'} />
+      <SearchBox placeholder={isAgent ? 'Search agents or countries…' : 'Search institutions or aggregators…'} />
 
       <div className="rows">
         {isAgent

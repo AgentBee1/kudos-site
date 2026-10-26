@@ -82,6 +82,7 @@ img { max-width: 100%; }
 .empty { text-align: center; padding: 16px; }
 
 .logo { width: 40px; height: 40px; border-radius: 10px; object-fit: contain; background: var(--cream); border: 1px solid var(--line-warm); flex: none; display: grid; place-items: center; font-size: 1.15rem; }
+.agg-badge { display: inline-block; vertical-align: middle; background: #f3f0ff; border: 1px solid #ddd3fb; color: #5b3fb5; border-radius: 999px; padding: 1px 8px; font-family: var(--body); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.01em; white-space: nowrap; }
 .pill { background: var(--cream); border: 1px solid var(--line-warm); border-radius: 999px; padding: 2px 10px; font-size: 0.8rem; color: var(--gold-dark); white-space: nowrap; font-weight: 400; }
 
 .award { display: flex; gap: 14px; align-items: center; padding: 12px 16px; background: var(--cream); }
