@@ -131,6 +131,8 @@ img { max-width: 100%; }
 .post-embed { margin: 24px 0 8px; }
 .embed-frame { max-width: 552px; background: #fff; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
 .embed-frame iframe { display: block; width: 100%; border: 0; }
+.evidence-image { display: block; max-width: 552px; background: #fff; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.evidence-image img { display: block; width: 100%; height: auto; }
 
 .client-note { display: none; color: var(--muted); font-size: 0.875rem; }
 html[data-view='client'] .agent-cta { display: none !important; }

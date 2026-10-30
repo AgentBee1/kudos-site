@@ -106,12 +106,24 @@ export default async function AwardPage({ params }) {
                 <a href={award.source_url} rel="noopener nofollow" target="_blank">
                   {sourceLabel(award.source_url)} ↗
                 </a>
+              ) : award.image_url ? (
+                <a href="#award-image">Image of the award ↓</a>
               ) : (
                 <span className="muted">Source on file with AgentBee</span>
               )}
             </dd>
           </dl>
         </div>
+
+        {award.image_url && (
+          <section className="post-embed" id="award-image">
+            <h2 className="section-title">The award</h2>
+            <a className="evidence-image" href={award.image_url} rel="noopener" target="_blank">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={award.image_url} alt={`${award.award_title} – ${award.agent_name}`} loading="lazy" />
+            </a>
+          </section>
+        )}
 
         {embed && (
           <section className="post-embed">
