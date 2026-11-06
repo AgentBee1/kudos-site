@@ -112,7 +112,10 @@ export async function GET(req) {
       .map((id) => all.find((a) => a.award_id === id))
       .filter(Boolean);
     const rest = all.filter((a) => !featured.includes(a));
-    shown = [...featured, ...rest].slice(0, FREE_CAP);
+    // Keep date order so the wall's year headings stay grouped.
+    shown = [...featured, ...rest]
+      .slice(0, FREE_CAP)
+      .sort((a, b) => String(b.award_date).localeCompare(String(a.award_date)));
   }
 
   if (host !== KUDOS_HOST) {
