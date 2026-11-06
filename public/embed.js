@@ -179,7 +179,7 @@
   }
 
   var preview = script.getAttribute('data-preview') === 'pro' ? '&preview=pro' : '';
-  fetch(BASE + '/api/widget?key=' + encodeURIComponent(KEY) + preview, { credentials: 'omit' })
+  fetch(BASE + '/api/widget?key=' + encodeURIComponent(KEY) + preview)
     .then(function (r) {
       return r.json().then(function (d) {
         if (!r.ok) throw new Error(d.error || 'HTTP ' + r.status);
