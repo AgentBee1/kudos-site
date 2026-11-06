@@ -1,4 +1,5 @@
 import './globals.css';
+import { Analytics } from '@vercel/analytics/next';
 import { SITE_URL } from '../lib/data';
 
 export const metadata = {
@@ -25,7 +26,10 @@ export default function RootLayout({ children }) {
           href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <Analytics />
+      </body>
     </html>
   );
 }
