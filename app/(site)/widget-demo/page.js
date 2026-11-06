@@ -1,4 +1,4 @@
-import EmbedPreview from './embed-preview';
+import EmbedPreview from '../../embed-preview';
 import { SITE_URL } from '../../../lib/data';
 
 export const metadata = {

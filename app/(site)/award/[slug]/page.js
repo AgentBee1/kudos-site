@@ -1,5 +1,5 @@
 import { notFound, permanentRedirect } from 'next/navigation';
-import { getAward, getAwards, CLAIM_URL, PAID_TIER_NAME, formatDate, websiteHref, DISCLAIMER, issuerLabel, isAggregatorAward } from '../../../../lib/data';
+import { getAward, getAwards, claimUrl, PAID_TIER_NAME, formatDate, websiteHref, DISCLAIMER, issuerLabel, isAggregatorAward } from '../../../../lib/data';
 import { AwardRow, AggregatorBadge } from '../../../components';
 import { getPostEmbed } from '../../../../lib/embed';
 
@@ -168,7 +168,7 @@ export default async function AwardPage({ params }) {
                 : ''}
               .
             </p>
-            <a className="btn btn-gold" href={CLAIM_URL}>
+            <a className="btn btn-gold" href={claimUrl(agent.slug)}>
               Claim this profile
             </a>
           </div>
