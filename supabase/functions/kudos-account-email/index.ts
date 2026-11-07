@@ -14,6 +14,7 @@ const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const SITE = 'https://kudos.agentbee.net';
 const ACCOUNT_URL = `${SITE}/account`;
 const FROM = 'Kudos by AgentBee <notifications@agentbee.net>';
+const ADMIN = 'https://incident-report-widget.vercel.app';
 
 const esc = (t: unknown) =>
   String(t ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
@@ -62,9 +63,10 @@ Sign in with ${to} and you'll be added to the team straight away.`;
   return { subject: `${inviter} invited you to ${agency} on Kudos`, html, text };
 }
 
-function claimPending(p: Record<string, string>, accountId: string): Email {
-  const sql = `select kudos_review_claim('${accountId}', true);`;
-  const html = `<p>A Kudos claim is waiting for approval.</p>
+function claimPending(p: Record<string, string>): Email {
+  const review = (action: string) => `${ADMIN}/claim.html?t=${encodeURIComponent(p.token ?? '')}&a=${action}`;
+  const html = `<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.55;color:#1f2430;max-width:560px;">
+<p>A Kudos claim is waiting for approval.</p>
 <table cellpadding="6" style="border-collapse:collapse;font-size:14px;">
 <tr><td style="color:#6b7280;">Agency</td><td><strong>${esc(p.agency)}</strong>${p.new_agency ? ' (not on Kudos yet)' : ''}</td></tr>
 <tr><td style="color:#6b7280;">Website</td><td>${esc(p.website || '—')}</td></tr>
@@ -72,10 +74,14 @@ ${p.country ? `<tr><td style="color:#6b7280;">Country</td><td>${esc(p.country)}<
 <tr><td style="color:#6b7280;">Requested by</td><td>${esc(p.email)}</td></tr>
 </table>
 <p>The email domain didn't match the agency's website, so it needs a manual check.</p>
-<p>To approve, run this in the Supabase SQL editor${p.new_agency ? " (create or find the agent first and add its id as a third argument: <code>kudos_review_claim('…', true, '&lt;agent id&gt;')</code>)" : ''}:</p>
-<pre style="background:#f5f7fb;padding:10px;border-radius:6px;">${esc(sql)}</pre>
-<p>To reject: <code>select kudos_review_claim('${esc(accountId)}', false);</code></p>`;
-  const text = `Kudos claim waiting for approval.\nAgency: ${p.agency}${p.new_agency ? ' (not on Kudos yet)' : ''}\nWebsite: ${p.website || '-'}\nRequested by: ${p.email}\n\nApprove: ${sql}\nReject: select kudos_review_claim('${accountId}', false);`;
+${p.token ? `<p style="margin:24px 0;">
+<a href="${review('approve')}" style="background:#15803d;color:#fff;padding:12px 22px;text-decoration:none;border-radius:8px;font-weight:bold;display:inline-block;margin-right:8px;">Approve</a>
+<a href="${review('reject')}" style="background:#fff;color:#b91c1c;border:1px solid #fecaca;padding:11px 21px;text-decoration:none;border-radius:8px;font-weight:bold;display:inline-block;">Reject</a>
+</p>
+<p style="color:#6b7280;font-size:13px;">Each button opens a confirmation page${p.new_agency ? ' where you also pick the agent record to link' : ''}. The link works once and expires in 7 days.</p>` : ''}
+<p style="font-size:13px;">Or open the <a href="${ADMIN}/review.html">review queue</a>.</p>
+</div>`;
+  const text = `Kudos claim waiting for approval.\nAgency: ${p.agency}${p.new_agency ? ' (not on Kudos yet)' : ''}\nWebsite: ${p.website || '-'}\nRequested by: ${p.email}\n\n${p.token ? `Approve: ${review('approve')}\nReject: ${review('reject')}\n` : ''}Review queue: ${ADMIN}/review.html`;
   return { subject: `Kudos: claim waiting for approval – ${p.agency}`, html, text };
 }
 
@@ -115,7 +121,7 @@ Deno.serve(async (req) => {
   } else if (row.kind === 'invite') {
     email = invite(agency, p.inviter ?? 'A colleague', row.to_email);
   } else {
-    email = claimPending({ ...p, agency }, row.account_id ?? '');
+    email = claimPending({ ...p, agency });
   }
 
   const res = await fetch('https://api.postmarkapp.com/email', {
@@ -129,6 +135,7 @@ Deno.serve(async (req) => {
       TextBody: email.text,
       MessageStream: 'outbound',
       Tag: `kudos-${row.kind}`,
+      TrackLinks: row.kind === 'claim_pending' ? 'None' : undefined,
     }),
   });
   const out = await res.json().catch(() => ({}));
