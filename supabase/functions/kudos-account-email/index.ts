@@ -40,12 +40,12 @@ function welcome(agency: string, embedKey: string | null, role: string): Email {
 ${button(ACCOUNT_URL, 'Open your Kudos account')}
 ${snippet ? `<p><strong>Show your verified awards on your website</strong><br>Paste this code where you'd like your awards to appear:</p>
 <pre style="background:#0f172a;color:#e2e8f0;padding:12px 14px;border-radius:8px;font-size:12px;white-space:pre-wrap;word-break:break-all;">${esc(snippet)}</pre>` : ''}
-<p>To sign in again, go to <a href="${ACCOUNT_URL}">${ACCOUNT_URL.replace('https://', '')}</a> and enter this email address. We'll email you a sign-in link; there's no password.</p>`);
+<p>You'll stay signed in on the device you used. To sign in on a new computer or phone, go to <a href="${ACCOUNT_URL}">${ACCOUNT_URL.replace('https://', '')}</a>, enter this email address and we'll email you a sign-in link. There's no password to remember.</p>`);
   const text = `${role === 'member' ? "You've joined the team managing" : "You're now managing"} ${agency} on Kudos.
 
 Open your Kudos account: ${ACCOUNT_URL}
 ${snippet ? `\nShow your verified awards on your website by pasting this code:\n${snippet}\n` : ''}
-To sign in again, go to ${ACCOUNT_URL} and enter this email address.`;
+You'll stay signed in on the device you used. To sign in on a new computer or phone, go to ${ACCOUNT_URL}, enter this email address and we'll email you a sign-in link.`;
   return { subject: `Your Kudos account for ${agency} is ready`, html, text };
 }
 
@@ -53,7 +53,7 @@ function invite(agency: string, inviter: string, to: string): Email {
   const html = layout(`<p>Hi,</p>
 <p><strong>${esc(inviter)}</strong> has invited you to help manage <strong>${esc(agency)}</strong> on Kudos, AgentBee's directory of verified agent awards.</p>
 ${button(ACCOUNT_URL, 'Accept invitation')}
-<p>Sign in with <strong>${esc(to)}</strong> and you'll be added to the team straight away. We'll email you a sign-in link; there's no password.</p>
+<p>Sign in with <strong>${esc(to)}</strong> and you'll be added to the team straight away. We'll email you a sign-in link; there's no password to set up.</p>
 <p style="color:#6b7280;font-size:13px;">Not expecting this? You can ignore this email.</p>`);
   const text = `${inviter} has invited you to help manage ${agency} on Kudos.
 

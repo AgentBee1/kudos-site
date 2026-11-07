@@ -131,7 +131,9 @@ function SignIn({ sb }) {
     <div className="acct-grid-2">
       <div className="acct-card">
         <h2>Sign in or create your free account</h2>
-        <p className="muted">No password needed: we'll email you a sign-in link.</p>
+        <p className="muted">
+          No password needed: we'll email you a sign-in link, and you'll stay signed in on this device.
+        </p>
         <form onSubmit={submit} className="acct-form">
           <label htmlFor="email">Work email</label>
           <input
