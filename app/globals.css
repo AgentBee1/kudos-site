@@ -252,3 +252,4 @@ body:has(.embed) { background: transparent; }
 }
 .acct-invite { display: flex; gap: 8px; flex-wrap: wrap; }
 .acct-invite input { flex: 1; min-width: 220px; }
+.acct-upgrade { display: flex; gap: 10px; flex-wrap: wrap; margin: 6px 0 4px; }
