@@ -1,4 +1,4 @@
-import { CLAIM_URL, PAID_TIER_NAME, formatDate, groupByAgent, groupByIssuer, isAggregatorAward } from '../lib/data';
+import { claimUrl, PAID_TIER_NAME, formatDate, groupByAgent, groupByIssuer, isAggregatorAward } from '../lib/data';
 import SearchBox from './search-box';
 
 export const KUDOS_LOGO = 'https://agentbee.net/wp-content/uploads/2023/09/kudos.png';
@@ -98,7 +98,7 @@ export function AgentRow({ agent, target, open = false }) {
             <span className="lock agent-cta">
               🔒 Showing {agent.visible.length} of {agent.total} awards. {PAID_TIER_NAME} agents display their full
               award history.{' '}
-              <a href={CLAIM_URL} target="_blank" rel="noopener">
+              <a href={claimUrl(agent.slug)} target="_blank" rel="noopener">
                 Is this your agency?
               </a>
             </span>

@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 
 // Loads /embed.js the same way an agent's website would.
-export default function EmbedPreview({ widgetKey, layout, theme, preview }) {
+export default function EmbedPreview({ widgetKey, layout, theme, accent, preview }) {
   const ref = useRef(null);
   useEffect(() => {
     const el = ref.current;
@@ -14,8 +14,9 @@ export default function EmbedPreview({ widgetKey, layout, theme, preview }) {
     s.setAttribute('data-key', widgetKey);
     if (layout) s.setAttribute('data-layout', layout);
     if (theme) s.setAttribute('data-theme', theme);
+    if (accent) s.setAttribute('data-accent', accent);
     if (preview) s.setAttribute('data-preview', preview);
     el.appendChild(s);
-  }, [widgetKey, layout, theme, preview]);
+  }, [widgetKey, layout, theme, accent, preview]);
   return <div ref={ref} />;
 }

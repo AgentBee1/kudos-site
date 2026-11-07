@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { getAgent, getAwards, groupByAgent, CLAIM_URL, PAID_TIER_NAME, websiteHref, DISCLAIMER } from '../../../../lib/data';
+import { getAgent, getAwards, groupByAgent, claimUrl, PAID_TIER_NAME, websiteHref, DISCLAIMER } from '../../../../lib/data';
 import { AwardRow, Logo } from '../../../components';
 
 export const revalidate = 600;
@@ -83,7 +83,7 @@ export default async function AgentPage({ params }) {
               <strong>Is this your agency?</strong> Claim your Kudos profile
               {hidden > 0 ? ` and upgrade to ${PAID_TIER_NAME} to display all ${agent.total} awards` : ''}.
             </p>
-            <a className="btn btn-gold" href={CLAIM_URL}>
+            <a className="btn btn-gold" href={claimUrl(agent.slug)}>
               Claim this profile
             </a>
           </div>

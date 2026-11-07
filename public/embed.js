@@ -7,7 +7,7 @@
   'use strict';
 
   var script = document.currentScript;
-  if (!script || !script.getAttribute('data-key')) return;
+  if (!script || !script.parentNode || !script.getAttribute('data-key')) return;
 
   var BASE = new URL(script.src).origin;
   var KEY = script.getAttribute('data-key');
