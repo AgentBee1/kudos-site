@@ -682,7 +682,7 @@ function AwardsTab({ sb, embed, setEmbed, isPro, awards, agent, awardFormUrl }) 
           <p className="muted small" style={{ margin: '4px 0 0' }}>
             {isPro
               ? 'Kudos Pro: every award appears on your widget and profile.'
-              : `Free plan: choose the ${FREE_CAP} awards your widget shows. Without a choice, it shows your latest ${FREE_CAP}.`}
+              : `Tick the ${FREE_CAP} awards to show on your website. If you don't choose, your latest ${FREE_CAP} are shown.`}
           </p>
         </div>
         <a className="btn btn-gold" href={addUrl} target="_blank" rel="noopener">
@@ -697,7 +697,7 @@ function AwardsTab({ sb, embed, setEmbed, isPro, awards, agent, awardFormUrl }) 
       ) : (
         <ul className="acct-awards">
           {awards.map((a) => {
-            const on = isPro || shown.has(a.award_id);
+            const on = !isPro && shown.has(a.award_id);
             return (
               <li key={a.award_id} className={on ? 'on' : ''}>
                 {!isPro && (
@@ -716,7 +716,6 @@ function AwardsTab({ sb, embed, setEmbed, isPro, awards, agent, awardFormUrl }) 
                     {a.award_date ? ` · ${a.award_date.slice(0, 4)}` : ''}
                   </div>
                 </div>
-                <span className="small muted">{on ? 'On widget' : 'On Kudos only'}</span>
               </li>
             );
           })}
