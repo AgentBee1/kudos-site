@@ -250,3 +250,5 @@ body:has(.embed) { background: transparent; }
 @media (max-width: 860px) {
   .acct-grid-2, .acct-widget { grid-template-columns: 1fr; }
 }
+.acct-invite { display: flex; gap: 8px; flex-wrap: wrap; }
+.acct-invite input { flex: 1; min-width: 220px; }

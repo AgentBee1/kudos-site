@@ -250,18 +250,19 @@ function Claim({ sb, account, setAccount }) {
               <div>
                 <strong>{r.name}</strong>
                 <div className="muted small">
-                  {[r.country, r.website, r.award_count ? `${r.award_count} award${r.award_count === 1 ? '' : 's'} on Kudos` : '']
+                  {[
+                    r.country,
+                    r.website,
+                    r.award_count ? `${r.award_count} award${r.award_count === 1 ? '' : 's'} on Kudos` : '',
+                    r.claimed ? 'Already managed by a colleague' : ''
+                  ]
                     .filter(Boolean)
                     .join(' · ')}
                 </div>
               </div>
-              {r.claimed ? (
-                <span className="muted small">Already claimed</span>
-              ) : (
-                <button className="btn btn-blue" disabled={!!busy} onClick={() => claim(r)}>
-                  {busy === r.id ? 'Claiming…' : 'This is my agency'}
-                </button>
-              )}
+              <button className="btn btn-blue" disabled={!!busy} onClick={() => claim(r)}>
+                {busy === r.id ? 'Please wait…' : r.claimed ? 'Join this team' : 'This is my agency'}
+              </button>
             </li>
           ))}
         </ul>
@@ -365,6 +366,7 @@ function Dashboard({ sb, account, setAccount, siteUrl, awardFormUrl }) {
         {[
           ['widget', 'Website widget'],
           ['awards', `Awards${awards ? ` (${awards.length})` : ''}`],
+          ['team', 'Team'],
           ['plan', 'Plan']
         ].map(([id, label]) => (
           <button key={id} className={`tab ${tab === id ? 'active' : ''}`} onClick={() => setTab(id)}>
@@ -387,8 +389,10 @@ function Dashboard({ sb, account, setAccount, siteUrl, awardFormUrl }) {
           agent={agent}
           awardFormUrl={awardFormUrl}
         />
+      ) : tab === 'team' ? (
+        <TeamTab sb={sb} agent={agent} onLeft={setAccount} />
       ) : (
-        <PlanTab isPro={isPro} agent={agent} />
+        <PlanTab isPro={isPro} agent={agent} isOwner={account.role === 'owner'} />
       )}
     </>
   );
@@ -737,7 +741,7 @@ function AwardsTab({ sb, embed, setEmbed, isPro, awards, agent, awardFormUrl }) 
   );
 }
 
-function PlanTab({ isPro, agent }) {
+function PlanTab({ isPro, agent, isOwner }) {
   const rows = [
     ['Awards on your website widget', `Your choice of ${FREE_CAP}`, 'All of them'],
     ['Awards on your Kudos profile', `Latest ${FREE_CAP}`, 'All of them'],
@@ -770,7 +774,10 @@ function PlanTab({ isPro, agent }) {
           ))}
         </tbody>
       </table>
-      {!isPro && (
+      {!isPro && !isOwner && (
+        <p className="small muted">Ask your account owner (see the Team tab) to upgrade your agency to Kudos Pro.</p>
+      )}
+      {!isPro && isOwner && (
         <>
           <p className="small muted">Launch price, available to early members.</p>
           <a className="btn btn-gold btn-lg" href={mail}>
@@ -779,6 +786,106 @@ function PlanTab({ isPro, agent }) {
           <p className="small muted">Online payment is coming soon. Until then, email us and we'll set you up.</p>
         </>
       )}
+    </div>
+  );
+}
+
+function TeamTab({ sb, agent, onLeft }) {
+  const [team, setTeam] = useState(null);
+  const [email, setEmail] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState('');
+  const [error, setError] = useState('');
+
+  const run = async (fn, args, ok) => {
+    setError('');
+    setMsg('');
+    setBusy(true);
+    const { data, error: e } = await sb.rpc(fn, args);
+    setBusy(false);
+    if (e) return setError(e.message);
+    if (fn === 'kudos_leave_team') return onLeft(data);
+    setTeam(data);
+    if (ok) setMsg(ok);
+  };
+
+  useEffect(() => {
+    run('kudos_team');
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (!team) return <p className="muted">{error || 'Loading team…'}</p>;
+
+  const invite = (e) => {
+    e.preventDefault();
+    run('kudos_invite_member', { p_email: email }, `Invitation sent to ${email.trim()}.`).then(() => setEmail(''));
+  };
+  const date = (d) => (d ? new Date(d).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' }) : '');
+
+  return (
+    <div className="acct-card">
+      <h3 style={{ marginTop: 0 }}>People who can manage {agent.name}</h3>
+      <p className="muted small">
+        Everyone on the team can add awards and change the website widget. Colleagues who sign in with an email at your
+        agency's website domain join automatically; anyone else needs an invitation.
+      </p>
+      <ul className="acct-awards">
+        {team.members.map((m) => (
+          <li key={m.id}>
+            <div>
+              <strong>{m.email}</strong>
+              {m.id === team.me && <span className="muted"> (you)</span>}
+              <div className="muted small">
+                {m.role === 'owner' ? 'Owner' : 'Member'}
+                {m.joined ? ` · joined ${date(m.joined)}` : ''}
+              </div>
+            </div>
+            {team.can_manage && m.role !== 'owner' && (
+              <button
+                className="btn btn-ghost"
+                disabled={busy}
+                onClick={() => window.confirm(`Remove ${m.email} from the team?`) && run('kudos_remove_member', { p_account_id: m.id })}
+              >
+                Remove
+              </button>
+            )}
+          </li>
+        ))}
+        {team.invites.map((i) => (
+          <li key={i.id}>
+            <div>
+              <strong>{i.email}</strong>
+              <div className="muted small">Invited {date(i.created_at)} · waiting for them to sign in</div>
+            </div>
+            {team.can_manage && (
+              <button className="btn btn-ghost" disabled={busy} onClick={() => run('kudos_cancel_invite', { p_invite_id: i.id })}>
+                Cancel
+              </button>
+            )}
+          </li>
+        ))}
+      </ul>
+
+      {team.can_manage ? (
+        <form className="acct-invite" onSubmit={invite}>
+          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="colleague@email.com" required />
+          <button className="btn btn-gold" disabled={busy}>
+            Send invitation
+          </button>
+        </form>
+      ) : (
+        <p className="small muted">
+          Only the owner can invite or remove people.{' '}
+          <button
+            className="acct-link"
+            disabled={busy}
+            onClick={() => window.confirm('Leave this team? You will lose access to this agency.') && run('kudos_leave_team')}
+          >
+            Leave this team
+          </button>
+        </p>
+      )}
+      {msg && <p className="small acct-msg">{msg}</p>}
+      {error && <p className="acct-error">{error}</p>}
     </div>
   );
 }
