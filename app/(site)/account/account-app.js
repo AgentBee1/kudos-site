@@ -14,10 +14,10 @@ function getClient(url, key) {
   return client;
 }
 
-const LAUNCH_PRICE = 'US$79/month or US$790/year';
+const LAUNCH_PRICE = 'US$79/month or US$790/year (plus GST in Australia)';
 const FREE_CAP = 3;
 
-export default function AccountApp({ supabaseUrl, supabaseKey, siteUrl, awardFormUrl }) {
+export default function AccountApp({ supabaseUrl, supabaseKey, siteUrl, awardFormUrl, billing }) {
   // Created in the browser only (the server render just shows "Loading…").
   const sb = useMemo(
     () => (typeof window === 'undefined' || !supabaseUrl ? null : getClient(supabaseUrl, supabaseKey)),
@@ -80,7 +80,7 @@ export default function AccountApp({ supabaseUrl, supabaseKey, siteUrl, awardFor
       ) : !account ? (
         !error && <p className="muted">Loading your account…</p>
       ) : status === 'approved' && account.agent ? (
-        <Dashboard sb={sb} account={account} setAccount={setAccount} siteUrl={siteUrl} awardFormUrl={awardFormUrl} />
+        <Dashboard sb={sb} account={account} setAccount={setAccount} siteUrl={siteUrl} awardFormUrl={awardFormUrl} billing={billing} />
       ) : status === 'pending' ? (
         <Pending sb={sb} account={account} setAccount={setAccount} />
       ) : (
@@ -402,8 +402,25 @@ function Pending({ sb, account, setAccount }) {
 
 /* ---------------------------------------------------------------- Dashboard */
 
-function Dashboard({ sb, account, setAccount, siteUrl, awardFormUrl }) {
-  const [tab, setTab] = useState('widget');
+function Dashboard({ sb, account, setAccount, siteUrl, awardFormUrl, billing }) {
+  const params = typeof window === 'undefined' ? new URLSearchParams() : new URLSearchParams(window.location.search);
+  const upgraded = params.get('upgraded') === '1';
+  const [tab, setTab] = useState(upgraded ? 'plan' : ['awards', 'team', 'plan'].includes(params.get('tab')) ? params.get('tab') : 'widget');
+
+  // After Stripe Checkout the webhook switches the plan; refresh until it shows (up to ~30s).
+  useEffect(() => {
+    if (!upgraded || account.agent?.is_pro) return;
+    let n = 0;
+    const t = setInterval(async () => {
+      n += 1;
+      const { data } = await sb.rpc('kudos_my_account');
+      if (data?.agent?.is_pro || n > 15) {
+        clearInterval(t);
+        if (data) setAccount(data);
+      }
+    }, 2000);
+    return () => clearInterval(t);
+  }, [upgraded]); // eslint-disable-line react-hooks/exhaustive-deps
   const [awards, setAwards] = useState(null);
   const agent = account.agent;
   const isPro = Boolean(agent.is_pro);
@@ -456,7 +473,7 @@ function Dashboard({ sb, account, setAccount, siteUrl, awardFormUrl }) {
       ) : tab === 'team' ? (
         <TeamTab sb={sb} agent={agent} onLeft={setAccount} />
       ) : (
-        <PlanTab isPro={isPro} agent={agent} isOwner={account.role === 'owner'} />
+        <PlanTab sb={sb} isPro={isPro} agent={agent} isOwner={account.role === 'owner'} upgraded={upgraded} billing={billing} />
       )}
     </>
   );
@@ -805,7 +822,9 @@ function AwardsTab({ sb, embed, setEmbed, isPro, awards, agent, awardFormUrl }) 
   );
 }
 
-function PlanTab({ isPro, agent, isOwner }) {
+function PlanTab({ sb, isPro, agent, isOwner, upgraded, billing }) {
+  const [busy, setBusy] = useState('');
+  const [error, setError] = useState('');
   const rows = [
     ['Awards on your website widget', `Your choice of ${FREE_CAP}`, 'All of them'],
     ['Awards on your Kudos profile', `Latest ${FREE_CAP}`, 'All of them'],
@@ -814,9 +833,34 @@ function PlanTab({ isPro, agent, isOwner }) {
     ['"Verified by AgentBee Kudos" mark', '✓', '✓'],
     ['Price', 'Free', LAUNCH_PRICE]
   ];
-  const mail = `mailto:admin@agentbee.net?subject=${encodeURIComponent(`Kudos Pro for ${agent.name}`)}`;
+  const invoiceMail = `mailto:admin@agentbee.net?subject=${encodeURIComponent(
+    `Kudos Pro yearly invoice for ${agent.name}`
+  )}&body=${encodeURIComponent('Please send us an invoice for Kudos Pro (yearly). We would like to pay by bank transfer.')}`;
+
+  const go = async (path, body, key) => {
+    setError('');
+    setBusy(key);
+    const { data } = await sb.auth.getSession();
+    const res = await fetch(path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${data.session?.access_token || ''}` },
+      body: JSON.stringify(body || {})
+    });
+    const out = await res.json().catch(() => ({}));
+    if (res.ok && out.url) return (window.location.href = out.url);
+    setBusy('');
+    setError(out.error || 'Something went wrong. Please try again.');
+  };
+
   return (
     <div className="acct-card">
+      {upgraded && (
+        <p className="acct-note">
+          {isPro
+            ? "🎉 Thanks! You're now on Kudos Pro: all your awards show on your website widget and Kudos profile."
+            : 'Thanks! Confirming your payment… this page updates in a few seconds.'}
+        </p>
+      )}
       <h3 style={{ marginTop: 0 }}>{isPro ? "You're on Kudos Pro" : 'Upgrade to Kudos Pro'}</h3>
       <table className="acct-table">
         <thead>
@@ -838,18 +882,51 @@ function PlanTab({ isPro, agent, isOwner }) {
           ))}
         </tbody>
       </table>
-      {!isPro && !isOwner && (
-        <p className="small muted">Ask your account owner (see the Team tab) to upgrade your agency to Kudos Pro.</p>
+
+      {!isOwner && (
+        <p className="small muted">
+          {isPro
+            ? 'Billing is managed by your account owner (see the Team tab).'
+            : 'Ask your account owner (see the Team tab) to upgrade your agency to Kudos Pro.'}
+        </p>
       )}
-      {!isPro && isOwner && (
+
+      {isOwner && isPro && billing && (
         <>
-          <p className="small muted">Launch price, available to early members.</p>
-          <a className="btn btn-gold btn-lg" href={mail}>
+          <button className="btn btn-blue btn-lg" disabled={!!busy} onClick={() => go('/api/billing/portal', null, 'portal')}>
+            {busy === 'portal' ? 'Opening…' : 'Manage billing'}
+          </button>
+          <p className="small muted">Change your card, download tax invoices or cancel.</p>
+        </>
+      )}
+
+      {isOwner && !isPro && !billing && (
+        <>
+          <a className="btn btn-gold btn-lg" href={`mailto:admin@agentbee.net?subject=${encodeURIComponent(`Kudos Pro for ${agent.name}`)}`}>
             Upgrade to Kudos Pro
           </a>
           <p className="small muted">Online payment is coming soon. Until then, email us and we'll set you up.</p>
         </>
       )}
+
+      {isOwner && !isPro && billing && (
+        <>
+          <p className="small muted">Launch price for early members. Prices in US dollars; GST is added for Australian agencies.</p>
+          <div className="acct-upgrade">
+            <button className="btn btn-gold btn-lg" disabled={!!busy} onClick={() => go('/api/billing/checkout', { interval: 'month' }, 'month')}>
+              {busy === 'month' ? 'Opening checkout…' : 'Upgrade: US$79 / month'}
+            </button>
+            <button className="btn btn-blue btn-lg" disabled={!!busy} onClick={() => go('/api/billing/checkout', { interval: 'year' }, 'year')}>
+              {busy === 'year' ? 'Opening checkout…' : 'Upgrade: US$790 / year (2 months free)'}
+            </button>
+          </div>
+          <p className="small muted">
+            Secure payment by Stripe. Card not accepted? <a href={invoiceMail}>Ask for a yearly invoice</a> to pay by
+            bank transfer.
+          </p>
+        </>
+      )}
+      {error && <p className="acct-error">{error}</p>}
     </div>
   );
 }

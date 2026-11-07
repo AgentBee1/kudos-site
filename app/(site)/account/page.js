@@ -16,6 +16,7 @@ export default function AccountPage() {
       supabaseUrl={process.env.SUPABASE_URL}
       supabaseKey={process.env.SUPABASE_ANON_KEY}
       siteUrl={SITE_URL}
+      billing={Boolean(process.env.STRIPE_SECRET_KEY && process.env.STRIPE_PRICE_MONTHLY && process.env.STRIPE_PRICE_YEARLY)}
       awardFormUrl={process.env.KUDOS_AWARD_FORM_URL || 'https://incident-report-widget.vercel.app/submit-award.html'}
     />
   );
