@@ -170,13 +170,38 @@ function SignIn({ sb }) {
 
 /* ---------------------------------------------------------------- Claim */
 
+function AgencyRow({ r, busy, onClaim }) {
+  return (
+    <li>
+      <div>
+        <strong>{r.name}</strong>
+        <div className="muted small">
+          {[
+            r.country,
+            r.website,
+            r.award_count ? `${r.award_count} award${r.award_count === 1 ? '' : 's'} on Kudos` : '',
+            r.claimed ? 'Already managed by a colleague' : ''
+          ]
+            .filter(Boolean)
+            .join(' · ')}
+        </div>
+      </div>
+      <button className="btn btn-blue" disabled={!!busy} onClick={() => onClaim(r)}>
+        {busy === r.id ? 'Please wait…' : r.claimed ? 'Join this team' : 'This is my agency'}
+      </button>
+    </li>
+  );
+}
+
 function Claim({ sb, account, setAccount }) {
-  const initial = useMemo(() => {
-    if (typeof window === 'undefined') return '';
-    const slug = new URLSearchParams(window.location.search).get('claim') || '';
-    return slug.replace(/-/g, ' ').trim();
-  }, []);
-  const [q, setQ] = useState(initial);
+  const fromSlug = useMemo(
+    () => (typeof window === 'undefined' ? '' : new URLSearchParams(window.location.search).get('claim') || ''),
+    []
+  );
+  const [suggested, setSuggested] = useState(null); // agencies we think are theirs
+  const [suggestNote, setSuggestNote] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
+  const [q, setQ] = useState('');
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
   const [busy, setBusy] = useState('');
@@ -184,10 +209,33 @@ function Claim({ sb, account, setAccount }) {
   const [showNew, setShowNew] = useState(false);
   const [newAgency, setNewAgency] = useState({ name: '', website: '', country: '' });
 
+  // 1. The profile they came from ("Claim this profile"), else 2. a match on their email domain.
+  useEffect(() => {
+    (async () => {
+      if (fromSlug) {
+        const { data } = await sb.rpc('kudos_agent_by_slug', { p_slug: fromSlug });
+        if (data?.length) {
+          setSuggested(data);
+          setSuggestNote('You came from this agency’s Kudos profile.');
+          return;
+        }
+      }
+      const { data } = await sb.rpc('kudos_suggest_agents');
+      if (data?.length) {
+        setSuggested(data);
+        setSuggestNote(`Matched to your email address (${account.email.split('@')[1]}).`);
+      } else {
+        setSuggested([]);
+        setShowSearch(true);
+      }
+    })();
+  }, [sb, fromSlug, account.email]);
+
   useEffect(() => {
     const term = q.trim();
-    if (term.length < 3) {
+    if (term.length < 2) {
       setResults([]);
+      setSearching(false);
       return;
     }
     setSearching(true);
@@ -196,7 +244,7 @@ function Claim({ sb, account, setAccount }) {
       setSearching(false);
       if (e) setError(e.message);
       else setResults(data || []);
-    }, 300);
+    }, 250);
     return () => clearTimeout(t);
   }, [q, sb]);
 
@@ -223,57 +271,71 @@ function Claim({ sb, account, setAccount }) {
     else setAccount(data);
   };
 
+  if (suggested === null) return <p className="muted">Loading…</p>;
+  const term = q.trim();
+
   return (
     <div className="acct-card">
       {account.claim_status === 'rejected' && (
         <p className="acct-note">
-          We couldn't confirm your last claim. Search again below, or contact admin@agentbee.net if you think this is a
-          mistake.
+          We couldn't confirm your last claim. Choose your agency again below, or contact admin@agentbee.net if you think
+          this is a mistake.
         </p>
       )}
-      <h2>Find your agency</h2>
-      <p className="muted">
-        Signed in as <strong>{account.email}</strong>. If that email matches your agency's website domain you'll be
-        approved straight away; otherwise we'll check and approve you, usually within one business day.
-      </p>
-      <input
-        className="acct-search"
-        value={q}
-        onChange={(e) => setQ(e.target.value)}
-        placeholder="Agency name or website"
-        autoFocus
-      />
-      {error && <p className="acct-error">{error}</p>}
-      {searching && <p className="muted small">Searching…</p>}
-      {results.length > 0 && (
-        <ul className="acct-results">
-          {results.map((r) => (
-            <li key={r.id}>
-              <div>
-                <strong>{r.name}</strong>
-                <div className="muted small">
-                  {[
-                    r.country,
-                    r.website,
-                    r.award_count ? `${r.award_count} award${r.award_count === 1 ? '' : 's'} on Kudos` : '',
-                    r.claimed ? 'Already managed by a colleague' : ''
-                  ]
-                    .filter(Boolean)
-                    .join(' · ')}
-                </div>
-              </div>
-              <button className="btn btn-blue" disabled={!!busy} onClick={() => claim(r)}>
-                {busy === r.id ? 'Please wait…' : r.claimed ? 'Join this team' : 'This is my agency'}
+
+      {suggested.length > 0 && (
+        <>
+          <h2>{suggested.length === 1 ? 'Is this your agency?' : 'Is one of these your agency?'}</h2>
+          <p className="muted small">{suggestNote}</p>
+          <ul className="acct-results">
+            {suggested.map((r) => (
+              <AgencyRow key={r.id} r={r} busy={busy} onClaim={claim} />
+            ))}
+          </ul>
+          {!showSearch && (
+            <p className="small" style={{ marginTop: 14 }}>
+              <button className="acct-link" onClick={() => setShowSearch(true)}>
+                Not your agency? Search for it
               </button>
-            </li>
-          ))}
-        </ul>
+            </p>
+          )}
+        </>
       )}
-      {q.trim().length >= 3 && !searching && results.length === 0 && <p className="muted small">No agencies found.</p>}
+
+      {showSearch && (
+        <div style={suggested.length ? { marginTop: 22 } : undefined}>
+          <h2>{suggested.length ? 'Search for your agency' : 'Find your agency'}</h2>
+          {!suggested.length && (
+            <p className="muted small">
+              Signed in as <strong>{account.email}</strong>. If that email matches your agency's website you'll be
+              approved straight away; otherwise we'll check and approve you, usually within one business day.
+            </p>
+          )}
+          <input
+            className="acct-search"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Agency name or website"
+            autoFocus
+          />
+          {term.length === 1 && <p className="muted small">Keep typing…</p>}
+          {searching && <p className="muted small">Searching…</p>}
+          {results.length > 0 && (
+            <ul className="acct-results">
+              {results.map((r) => (
+                <AgencyRow key={r.id} r={r} busy={busy} onClaim={claim} />
+              ))}
+            </ul>
+          )}
+          {term.length >= 2 && !searching && results.length === 0 && <p className="muted small">No agencies found.</p>}
+        </div>
+      )}
+
+      {error && <p className="acct-error">{error}</p>}
 
       <p className="small" style={{ marginTop: 18 }}>
         <button className="acct-link" onClick={() => setShowNew(!showNew)}>
-          Can't find your agency?
+          Agency not on Kudos?
         </button>
       </p>
       {showNew && (
