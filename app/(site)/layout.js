@@ -1,4 +1,3 @@
-import { DISCLAIMER } from '../../lib/data';
 import ClientView from '../client-view';
 
 const AGENTBEE_LOGO = 'https://agentbee.net/wp-content/uploads/2020/06/Copy-of-Small-Logo-Transparent.png';
@@ -28,7 +27,6 @@ export default function SiteLayout({ children }) {
       <footer className="site-footer">
         <div className="wrap footer-inner">
           <img src={FOOTER_LOGO} alt="AgentBee" height="40" />
-          <p>{DISCLAIMER}</p>
           <p>
             © {new Date().getFullYear()} AgentBee · <a href="https://agentbee.net/privacy/">Privacy</a> ·{' '}
             <a href="https://airtable.com/shrlheeW9qhBskrlp">Contact</a>

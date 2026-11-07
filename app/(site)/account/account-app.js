@@ -160,7 +160,7 @@ function SignIn({ sb }) {
         <ul>
           <li>Claim your agency's free Kudos profile</li>
           <li>Add awards you've received from universities and colleges</li>
-          <li>Paste one line of code to show them on your website, independently verified by AgentBee</li>
+          <li>Paste one line of code to show them on your website, optimised for desktop and mobile</li>
           <li>Preview exactly how it looks on desktop and mobile before you add it</li>
         </ul>
       </div>
