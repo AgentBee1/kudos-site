@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'Your Kudos account',
-  description: 'Claim your agency on Kudos, add your awards and get your verified awards widget.',
+  description: 'Claim your agency on Kudos, add your awards and get your awards widget.',
   robots: { index: false, follow: false }
 };
 
