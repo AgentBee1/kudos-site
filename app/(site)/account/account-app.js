@@ -156,7 +156,7 @@ function SignIn({ sb }) {
         </p>
       </div>
       <div className="acct-pitch">
-        <h2>Show your verified awards on your own website</h2>
+        <h2>Show your awards on your own website</h2>
         <ul>
           <li>Claim your agency's free Kudos profile</li>
           <li>Add awards you've received from universities and colleges</li>
@@ -830,7 +830,7 @@ function PlanTab({ sb, isPro, agent, isOwner, upgraded, billing }) {
     ['Awards on your Kudos profile', `Latest ${FREE_CAP}`, 'All of them'],
     ['Logo and "Visit website" button on Kudos', '—', '✓'],
     ['Widget layouts and colours', '✓', '✓'],
-    ['"Verified by AgentBee Kudos" mark', '✓', '✓'],
+    ['"Listed on AgentBee Kudos" mark', '✓', '✓'],
     ['Price', 'Free', LAUNCH_PRICE]
   ];
   const invoiceMail = `mailto:admin@agentbee.net?subject=${encodeURIComponent(
